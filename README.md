@@ -9,9 +9,9 @@
    `claude setup-token` → войди в аккаунт → скопируй длинный токен.
 2. **Секреты в GitHub.** В репозитории: Settings → Secrets and variables → Actions → New repository secret.
    Создай три секрета:
-   - `CLAUDE_CODE_OAUTH_TOKEN` — токен из шага 1
-   - `TELEGRAM_BOT_TOKEN` — токен бота Dota Coach (из BotFather или из config.json на компьютере)
-   - `TELEGRAM_CHAT_ID` — твой chat_id (есть в config.json на компьютере)
+   - `CLAUDE_TOKEN` — токен из шага 1
+   - `TELEGRAM_BOT` — токен бота Dota Coach (из BotFather или из config.json на компьютере)
+   - `TELEGRAM_CHAT` — твой chat_id (есть в config.json на компьютере)
 3. **Проверка.** Вкладка Actions → Dota Coach → Run workflow. Через 1–3 минуты запуск должен стать зелёным.
 4. **Выключи коуча на компьютере** (закрой окно и убери ярлык из автозагрузки), иначе будут дубли разборов
    и два коуча будут мешать друг другу читать сообщения в Telegram.
