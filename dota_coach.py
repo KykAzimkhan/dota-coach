@@ -925,6 +925,33 @@ def answer_question(cfg, question, history):
     return analyze(cfg, prompt)
 
 
+def transcribe_voice(cfg, file_id):
+    """Скачивает голосовое из Telegram и расшифровывает его бесплатной моделью Whisper."""
+    token = cfg["telegram_bot_token"]
+    info = http_json(f"https://api.telegram.org/bot{token}/getFile?file_id={urllib.parse.quote(file_id)}")
+    path = info["result"]["file_path"]
+    CACHE_DIR.mkdir(exist_ok=True)
+    local = CACHE_DIR / ("voice" + Path(path).suffix)
+    req = urllib.request.Request(f"https://api.telegram.org/file/bot{token}/{path}",
+                                 headers={"User-Agent": "dota-coach/1.0"})
+    with urllib.request.urlopen(req, timeout=60) as r:
+        local.write_bytes(r.read())
+    try:
+        from faster_whisper import WhisperModel
+    except ImportError:
+        log("Устанавливаю распознавание речи (один раз)…")
+        subprocess.run([sys.executable, "-m", "pip", "install", "-q", "faster-whisper"], check=True)
+        from faster_whisper import WhisperModel
+    model = WhisperModel(cfg.get("whisper_model", "small"), device="cpu", compute_type="int8")
+    segments, _ = model.transcribe(str(local), language=cfg.get("whisper_language") or None, beam_size=1)
+    text = " ".join(seg.text.strip() for seg in segments).strip()
+    try:
+        local.unlink()
+    except Exception:
+        pass
+    return text
+
+
 def handle_chat(cfg, od, state, poll_timeout=20):
     """Читает новые сообщения боту и отвечает. Возвращает, было ли что-то обработано."""
     chat_id = str(cfg.get("telegram_chat_id") or "")
@@ -944,6 +971,19 @@ def handle_chat(cfg, od, state, poll_timeout=20):
         if str((msg.get("chat") or {}).get("id")) != chat_id:
             continue  # чужие сообщения игнорируем
         text = (msg.get("text") or "").strip()
+        voice_obj = msg.get("voice") or msg.get("audio") or msg.get("video_note")
+        if not text and voice_obj:
+            try:
+                tg_typing(cfg)
+                text = transcribe_voice(cfg, voice_obj["file_id"])
+                if not text:
+                    tg_send(cfg, "Не разобрал голосовое, попробуй ещё раз или напиши текстом.")
+                    continue
+                tg_send(cfg, f"🎙 Услышал: {text}")
+            except Exception as e:
+                log(f"Ошибка расшифровки голосового: {e}")
+                tg_send(cfg, f"Не получилось расшифровать голосовое: {e}")
+                continue
         if not text:
             continue
         log(f"Сообщение в Telegram: {text[:80]}")
