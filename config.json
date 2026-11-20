@@ -1,0 +1,24 @@
+{
+  "steam_ids": [
+    {
+      "id": "76561198720307675",
+      "name": "Kyka"
+    },
+    {
+      "id": "76561198156071697",
+      "name": "βρο.Κυκ"
+    }
+  ],
+  "player_profile": "Играю на миде (2) и на саппортах (4–5), иногда Огр на тройке (3). Мид: в основном Sniper и Ogre Magi. Саппорты: Crystal Maiden, Lion, Shadow Shaman, Ogre Magi. Два аккаунта: Kyka (Властелин, чаще саппорт) и βρο.Κυκ (Легенда, чаще кор) — точный ранг в матче указан в данных. Учитывай роль, на которой я реально стоял в матче, и давай советы именно под неё.",
+  "telegram_bot_token": "",
+  "telegram_chat_id": "",
+  "analyzer": "claude_code",
+  "claude_cli": "",
+  "claude_model": "",
+  "anthropic_api_key": "",
+  "anthropic_model": "claude-sonnet-5-5",
+  "opendota_api_key": "",
+  "check_interval_minutes": 5,
+  "parse_wait_minutes": 20,
+  "history_matches": 3
+}
