@@ -2,7 +2,7 @@ name: Dota Coach
 
 on:
   schedule:
-    - cron: "*/5 * * * *"   # каждые 5 минут (GitHub может запускать с задержкой)
+    - cron: "*/10 * * * *"  # GitHub реально запускает примерно раз в час; каждый запуск работает ~55 мин
   workflow_dispatch:         # кнопка «Run workflow» для ручного запуска
 
 permissions:
@@ -15,7 +15,7 @@ concurrency:
 jobs:
   coach:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 75
     steps:
       - uses: actions/checkout@v4
 
@@ -43,7 +43,7 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT }}
           OPENDOTA_API_KEY: ${{ secrets.OPENDOTA_API_KEY }}
           PYTHONIOENCODING: utf-8
-        run: python dota_coach.py --once
+        run: python dota_coach.py --run-minutes 55
 
       - name: Save state and analyses
         run: |

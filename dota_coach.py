@@ -1018,6 +1018,8 @@ def handle_chat(cfg, od, state, poll_timeout=20):
 
 def main():
     ap = argparse.ArgumentParser(description="Dota Coach")
+    ap.add_argument("--run-minutes", type=int, default=0,
+                    help="работать N минут (проверка матчей каждые 5 мин + чат), затем выйти — для облака")
     ap.add_argument("--once", action="store_true", help="одна проверка матчей + ответы на сообщения (для облака)")
     ap.add_argument("--watch", action="store_true", help="следить за новыми матчами постоянно")
     ap.add_argument("--latest", action="store_true", help="разобрать последний матч сейчас")
@@ -1057,6 +1059,28 @@ def main():
         _, mid, acc, name = best
         wait_for_parse(cfg, od, mid)
         process_match(cfg, od, mid, acc, name, args.dry_run, args.fresh)
+        return
+
+    if args.run_minutes:
+        interval = max(2, int(cfg.get("check_interval_minutes", 5))) * 60
+        stop_at = time.time() + args.run_minutes * 60
+        log(f"Облачный режим: работаю {args.run_minutes} мин, матчи каждые {interval // 60} мин, чат постоянно.")
+        next_check = 0
+        while time.time() < stop_at:
+            if time.time() >= next_check:
+                try:
+                    check_new(cfg, od, args.dry_run)
+                except Exception as e:
+                    log(f"Ошибка: {e}")
+                next_check = time.time() + interval
+            try:
+                left = int(stop_at - time.time())
+                if left <= 5:
+                    break
+                handle_chat(cfg, od, load_state(), poll_timeout=min(25, left - 5))
+            except Exception as e:
+                log(f"Ошибка чата: {e}")
+                time.sleep(15)
         return
 
     if args.once:
